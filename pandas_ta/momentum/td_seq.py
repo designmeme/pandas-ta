@@ -94,7 +94,7 @@ def calc_td(series: Series, direction: str, show_all: bool):
     td_bool = series.diff(4) > 0 if direction == "up" else series.diff(4) < 0
     td_num = where(td_bool, td_bool.rolling(13, min_periods=0) \
         .apply(sequence_count), 0)
-    td_num = Series(td_num)
+    td_num = Series(td_num, index=series.index)
 
     if show_all:
         td_num = td_num.mask(td_num == 0)
