@@ -44,8 +44,8 @@ def pvr(
 
     pvr.loc[(close_diff >= 0) & (volume_diff >= 0)] = 1
     pvr.loc[(close_diff >= 0) & (volume_diff < 0)] = 2
-    pvr.loc[(close_diff < 0) & (volume_diff >= 0)] = 3
-    pvr.loc[(close_diff < 0) & (volume_diff < 0)] = 4
+    pvr.loc[(close_diff < 0) & (volume_diff < 0)] = 3
+    pvr.loc[(close_diff < 0) & (volume_diff >= 0)] = 4
 
     # Name and Category
     pvr.name = f"PVR"
