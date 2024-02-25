@@ -30,8 +30,6 @@ def ui(
     Kwargs:
         fillna (value, optional): pd.DataFrame.fillna(value)
         fill_method (value, optional): Type of fill method
-        everget (value, optional): TradingView's Evergets SMA instead of SUM
-            calculation. Default: False
 
     Returns:
         pd.Series: New feature
@@ -51,13 +49,7 @@ def ui(
     downside = scalar * (close - highest_close) / highest_close
     d2 = downside * downside
 
-    everget = kwargs.pop("everget", False)
-    if everget:
-        # Everget uses SMA instead of SUM for calculation
-        _ui = sma(d2, length)
-    else:
-        _ui = d2.rolling(length).sum()
-    ui = sqrt(_ui / length)
+    ui = sqrt(d2.rolling(length).sum() / length)
 
     # Offset
     if offset != 0:
@@ -70,7 +62,7 @@ def ui(
         ui.fillna(method=kwargs["fill_method"], inplace=True)
 
     # Name and Category
-    ui.name = f"UI{'' if not everget else 'e'}_{length}"
+    ui.name = f"UI_{length}"
     ui.category = "volatility"
 
     return ui
