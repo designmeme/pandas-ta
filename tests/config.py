@@ -10,9 +10,9 @@ import pandas_ta
 from pandas_ta._typing import DictLike, IntFloat
 
 sample_adx_data = read_csv(
-    f"data/ADX_D.csv", index_col=0, parse_dates=True, keep_date_col=True
+    f"data/ADX_D.csv", index_col=0,
+    parse_dates=True, date_format="%f"
 )
-
 
 ALERT: str = f"[!]"
 INFO: str = f"[i]"
@@ -49,8 +49,6 @@ def load(**kwargs: DictLike):
 
     kwargs.setdefault("index_col", 0)
     kwargs.setdefault("parse_dates", True)
-    kwargs.setdefault("infer_datetime_format", True)
-    kwargs.setdefault("keep_date_col", True)
 
     kwargs.setdefault("verbose", False)
 
@@ -61,8 +59,6 @@ def load(**kwargs: DictLike):
             fpath,
             index_col=kwargs["index_col"],
             parse_dates=kwargs["parse_dates"],
-            infer_datetime_format=kwargs["infer_datetime_format"],
-            keep_date_col=kwargs["index_col"],
         )
         _mode = "Loading"
     except BaseException as err:
@@ -72,11 +68,12 @@ def load(**kwargs: DictLike):
         df.to_csv(Path(fpath), mode="a")
         _mode = "Downloading"
 
-    kwargs.setdefault("n", 0)
-    if kwargs["n"] > 0:
-        df = df[:kwargs["n"]]
-    elif kwargs['n'] < 0:
-        df = df[kwargs["n"]:]
+    kwargs.setdefault("n", None)
+    if isinstance(kwargs["n"], int):
+        if kwargs["n"] > 0:
+            df = df[:kwargs["n"]]
+        elif kwargs['n'] < 0:
+            df = df[kwargs["n"]:]
 
     df.columns = df.columns.str.lower()
     if kwargs["verbose"]:
@@ -92,9 +89,9 @@ sample_data = load(
         fpath="data/SPY_D.csv",
         n = [
             -2 * _tdpy, -_tdpy,
-            -89, 0, 89,
+            -200, -89, 0, 89, 200,
             _tdpy, 2 * _tdpy
-        ][0],
+        ][4],
         verbose=VERBOSE
     )
 

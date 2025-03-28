@@ -30,7 +30,8 @@ from pandas_ta.trend import __all__ as trend_all
 from pandas_ta.volatility import __all__ as volatility_all
 from pandas_ta.volume import __all__ as volume_all
 
-# Common Averages useful for Indicators with a mamode argument, like ta.adx()
+# Common Averages useful for Indicators
+# with a mamode argument, like ta.adx()
 from pandas_ta.ma import ma
 
 # Custom External Directory Commands. See help(import_dir)
@@ -52,7 +53,7 @@ __all__ = [
     "AnalysisIndicators",
 ]
 
-__all__ += (
+__all__ += [
     utils_all
     + candles_all
     + cycles_all
@@ -64,4 +65,4 @@ __all__ += (
     + trend_all
     + volatility_all
     + volume_all
-)
+]

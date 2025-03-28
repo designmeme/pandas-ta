@@ -16,8 +16,9 @@ from pandas_ta.utils import (
 from pandas_ta.volatility import atr
 
 
-@njit
-def np_atrts(x, ma, atr_, length, ma_length):
+
+@njit(cache=True)
+def nb_atrts(x, ma, atr_, length, ma_length):
     m = x.size
     k = max(length, ma_length)
 
@@ -83,7 +84,6 @@ def atrts(
     Kwargs:
         percent (bool, optional): Return as percentage. Default: False
         fillna (value, optional): pd.DataFrame.fillna(value)
-        fill_method (value, optional): Type of fill method
 
     Returns:
         pd.Series: New feature generated.
@@ -122,8 +122,8 @@ def atrts(
     atr_ *= multiplier
     ma_ = _ma(mamode, close, length=ma_length, talib=mode_tal)
 
-    np_close, np_ma, np_atr = close.values, ma_.values, atr_.values
-    np_atrts_, _, _ = np_atrts(np_close, np_ma, np_atr, length, ma_length)
+    np_close, np_ma, np_atr = close.to_numpy(), ma_.to_numpy(), atr_.to_numpy()
+    np_atrts_, _, _ = nb_atrts(np_close, np_ma, np_atr, length, ma_length)
 
     percent = kwargs.pop("percent", False)
     if percent:
@@ -135,13 +135,11 @@ def atrts(
     if offset != 0:
         atrts = atrts.shift(offset)
 
-    # Handle fills
+    # Fill
     if "fillna" in kwargs:
         atrts.fillna(kwargs["fillna"], inplace=True)
-    if "fill_method" in kwargs:
-        atrts.fillna(method=kwargs["fill_method"], inplace=True)
 
-    # Name and Categorize it
+    # Name and Category
     _props = f"ATRTS{mamode[0]}{'p' if percent else ''}"
     atrts.name = f"{_props}_{length}_{ma_length}_{multiplier}"
     atrts.category = "volatility"

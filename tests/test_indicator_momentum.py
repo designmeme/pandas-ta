@@ -3,7 +3,7 @@ import pandas.testing as pdt
 import talib as tal
 import pandas_ta as ta
 
-from pandas import DataFrame, Series
+from pandas import DataFrame, Series, concat
 from pytest import mark
 
 from .config import CORRELATION, CORRELATION_THRESHOLD, error_analysis
@@ -184,6 +184,16 @@ def test_eri(df):
     assert result.name == "ERI_13"
 
 
+def test_exhc(df):
+    result = ta.exhc(df.close)
+    assert isinstance(result, DataFrame)
+    assert result.name == "EXHCa"
+
+    result = ta.exhc(df.close, show_all=False)
+    assert isinstance(result, DataFrame)
+    assert result.name == "EXHC"
+
+
 def test_fisher(df):
     result = ta.fisher(df.high, df.low)
     assert isinstance(result, DataFrame)
@@ -296,7 +306,7 @@ def test_ppo(df):
 
     try:
         expected = tal.PPO(df.close)
-        pdt.assert_series_equal(result, expected, check_names=False)
+        pdt.assert_series_equal(result.iloc[:,0], expected, check_names=False)
     except AssertionError:
         try:
             corr = ta.utils.df_error_analysis(result, expected)
@@ -376,10 +386,9 @@ def test_rsx(df):
     assert result.name == "RSX_14"
 
 
-@mark.skip(reason="AttributeError: 'Series' object has no attribute 'df'")
 def test_rvgi(df):
-    result = ta.rvgi(df.open, df.high, df.low. df.close) # Weird Exception
-    assert isinstance(result, Series)
+    result = ta.rvgi(df.open, df.high, df.low, df.close)
+    assert isinstance(result, DataFrame)
     assert result.name == "RVGI_14_4"
 
 
@@ -395,6 +404,12 @@ def test_slope(df):
     result = ta.slope(df.close, as_angle=True, to_degrees=True)
     assert isinstance(result, Series)
     assert result.name == "ANGLEd_1"
+
+
+def test_smc(df):
+    result = ta.smc(df.open, df.high, df.low, df.close)
+    assert isinstance(result, DataFrame)
+    assert result.name == "SMC_14_50_20_5"
 
 
 def test_smi(df):
@@ -538,12 +553,6 @@ def test_trix(df):
     assert result.name == "TRIX_30_9"
 
 
-def test_td_seq(df):
-    result = ta.td_seq(df.close)
-    assert isinstance(result, DataFrame)
-    assert result.name == "TD_SEQ"
-
-
 def test_tsi(df):
     result = ta.tsi(df.close)
     assert isinstance(result, DataFrame)
@@ -668,6 +677,11 @@ def test_ext_eri(df):
     assert list(df.columns[-2:]) == ["BULLP_13", "BEARP_13"]
 
 
+def test_ext_exhc(df):
+    df.ta.exhc(append=True)
+    assert list(df.columns[-2:]) == ["EXHC_DNa", "EXHC_UPa"]
+
+
 def test_ext_fisher(df):
     df.ta.fisher(append=True)
     assert list(df.columns[-2:]) == ["FISHERT_9_1", "FISHERTs_9_1"]
@@ -753,6 +767,16 @@ def test_ext_slope(df):
     assert df.columns[-1] == "SLOPE_1"
 
 
+def test_ext_smc(df):
+    df.ta.smc(append=True)
+    columns = [
+        "SMChv_14_50_20_5",
+        "SMCbf_14_50_20_5", "SMCbi_14_50_20_5", "SMCbp_14_50_20_5",
+        "SMCtf_14_50_20_5", "SMCti_14_50_20_5", "SMCtp_14_50_20_5"
+    ]
+    assert list(df.columns[-7:]) == columns
+
+
 def test_ext_smi(df):
     df.ta.smi(append=True)
     columns = ["SMI_5_20_5_1.0", "SMIs_5_20_5_1.0", "SMIo_5_20_5_1.0"]
@@ -791,11 +815,6 @@ def test_ext_stochf(df):
 def test_ext_stochrsi(df):
     df.ta.stochrsi(append=True)
     assert list(df.columns[-2:]) == ["STOCHRSIk_14_14_3_3", "STOCHRSId_14_14_3_3"]
-
-
-def test_ext_td_seq(df):
-    df.ta.td_seq(append=True)
-    assert list(df.columns[-2:]) == ["TD_SEQ_UPa", "TD_SEQ_DNa"]
 
 
 def test_ext_tmo(df):

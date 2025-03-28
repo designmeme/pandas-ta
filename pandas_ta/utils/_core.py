@@ -18,8 +18,8 @@ __all__ = [
     "category_files",
     "client_exists",
     "ms2secs",
+    "nb_non_zero_range",
     "non_zero_range",
-    "np_non_zero_range",
     "recent_maximum_index",
     "recent_minimum_index",
     "rma_pandas",
@@ -31,9 +31,10 @@ __all__ = [
 ]
 
 
+
 def camelCase2Title(x: str):
     """https://stackoverflow.com/questions/5020906/python-convert-camel-case-to-space-delimited-using-regex-and-taking-acronyms-in"""
-    return re_.sub("([a-z])([A-Z])", "\\g<1> \\g<2>", x).title()
+    return re_.sub("([a-z])([A-Z])",r"\g<1> \g<2>", x).title()
 
 
 def category_files(category: str) -> list:
@@ -65,8 +66,8 @@ def non_zero_range(high: Series, low: Series) -> Series:
     return diff
 
 
-@njit
-def np_non_zero_range(x, y):
+@njit(cache=True)
+def nb_non_zero_range(x, y):
     diff = x - y
     if diff.any() == 0:
         diff += finfo(float64).eps
@@ -93,7 +94,7 @@ def signed_series(series: Series, initial: Int, lag: Int = None) -> Series:
     Default Example:
     series = Series([3, 2, 2, 1, 1, 5, 6, 6, 7, 5])
     and returns:
-    sign = Series([NaN, -1.0, 0.0, -1.0, 0.0, 1.0, 1.0, 0.0, 1.0, -1.0])
+    sign = Series([nan, -1.0, 0.0, -1.0, 0.0, 1.0, 1.0, 0.0, 1.0, -1.0])
     """
     initial = None
     if initial is not None and not isinstance(lag, str):
@@ -138,7 +139,7 @@ def tal_ma(name: str) -> Int:
     return 0  # Default: SMA -> 0
 
 
-def unsigned_differences(series: Series, amount: Int = None,
+def unsigned_differences(series: Series, lag: Int = None,
                          **kwargs) -> Union[Series, Series]:
     """Unsigned Differences
     Returns two Series, an unsigned positive and unsigned negative series based
@@ -150,8 +151,8 @@ def unsigned_differences(series: Series, amount: Int = None,
     positive  = Series([0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0])
     negative = Series([0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1])
     """
-    amount = int(amount) if amount is not None else 1
-    negative = series.diff(amount)
+    lag = int(lag) if lag is not None else 1
+    negative = series.diff(lag)
     negative.fillna(0, inplace=True)
     positive = negative.copy()
 

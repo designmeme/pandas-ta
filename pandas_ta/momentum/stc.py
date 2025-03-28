@@ -11,6 +11,7 @@ from pandas_ta.utils import (
 )
 
 
+
 def stc(
     close: Series, tclength: Int = None,
     fast: Int = None, slow: Int = None, factor: IntFloat = None,
@@ -59,7 +60,6 @@ def stc(
         ma2: External MA (mandatory in conjunction with ma1)
         osc: External oscillator
         fillna (value, optional): pd.DataFrame.fillna(value)
-        fill_method (value, optional): Type of fill method
 
     Returns:
         pd.DataFrame: stc, macd, stoch
@@ -130,10 +130,6 @@ def stc(
         stc.fillna(kwargs["fillna"], inplace=True)
         macd.fillna(kwargs["fillna"], inplace=True)
         stoch.fillna(kwargs["fillna"], inplace=True)
-    if "fill_method" in kwargs:
-        stc.fillna(method=kwargs["fill_method"], inplace=True)
-        macd.fillna(method=kwargs["fill_method"], inplace=True)
-        stoch.fillna(method=kwargs["fill_method"], inplace=True)
 
     # Name and Category
     _props = f"_{tclength}_{fast}_{slow}_{factor}"
@@ -156,37 +152,43 @@ def stc(
 
 def schaff_tc(close, xmacd, tclength, factor):
     # ACTUAL Calculation part, which is shared between operation modes
-    # 1St : Stochastic of MACD
-    lowest_xmacd = xmacd.rolling(tclength).min()  # min value in interval tclen
+    lowest_xmacd = xmacd.rolling(tclength).min()
     xmacd_range = non_zero_range(xmacd.rolling(tclength).max(), lowest_xmacd)
     m = len(xmacd)
 
-    # %Fast K of MACD
-    stoch1, pf = list(xmacd), list(xmacd)
-    stoch1[0], pf[0] = 0, 0
+    # Initialize lists
+    stoch1, pf = [0] * m, [0] * m
+    stoch2, pff = [0] * m, [0] * m
+
     for i in range(1, m):
-        if lowest_xmacd[i] > 0:
-            stoch1[i] = 100 * ((xmacd[i] - lowest_xmacd[i]) / xmacd_range[i])
+        # %Fast K of MACD
+        if lowest_xmacd.iloc[i] > 0:
+            stoch1[i] = 100 * ((xmacd.iloc[i] - lowest_xmacd.iloc[i]) / xmacd_range.iloc[i])
         else:
             stoch1[i] = stoch1[i - 1]
         # Smoothed Calculation for % Fast D of MACD
         pf[i] = round(pf[i - 1] + (factor * (stoch1[i] - pf[i - 1])), 8)
 
-    pf = Series(pf, index=close.index)
+        # find min and max so far
+        if i < tclength:
+            # If there are not enough elements for a full tclength window, use what is available
+            lowest_pf = min(pf[:i+1])
+            highest_pf = max(pf[:i+1])
+        else:
+            lowest_pf = min(pf[i-tclength+1:i+1])
+            highest_pf = max(pf[i-tclength+1:i+1])
 
-    # 2nd : Stochastic of smoothed Percent Fast D, 'PF', above
-    lowest_pf = pf.rolling(tclength).min()
-    pf_range = non_zero_range(pf.rolling(tclength).max(), lowest_pf)
+        # Ensure non-zero range
+        pf_range = highest_pf - lowest_pf if highest_pf - lowest_pf > 0 else 1
 
-    # % of Fast K of PF
-    stoch2, pff = list(xmacd), list(xmacd)
-    stoch2[0], pff[0] = 0, 0
-    for i in range(1, m):
-        if pf_range[i] > 0:
-            stoch2[i] = 100 * ((pf[i] - lowest_pf[i]) / pf_range[i])
+        # % of Fast K of PF
+        if pf_range > 0:
+            stoch2[i] = 100 * ((pf[i] - lowest_pf) / pf_range)
         else:
             stoch2[i] = stoch2[i - 1]
-        # Smoothed Calculation for % Fast D of PF
         pff[i] = round(pff[i - 1] + (factor * (stoch2[i] - pff[i - 1])), 8)
 
-    return pff, pf
+    pf_series = Series(pf, index=close.index)
+    pff_series = Series(pff, index=close.index)
+
+    return pff_series, pf_series

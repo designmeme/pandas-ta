@@ -4,6 +4,7 @@ from pandas_ta._typing import DictLike, Int
 from pandas_ta.utils import v_offset, v_series
 
 
+
 def ohlc4(
     open_: Series, high: Series, low: Series, close: Series,
     offset: Int = None, **kwargs: DictLike
@@ -22,8 +23,6 @@ def ohlc4(
     Kwargs:
         fillna (value, optional): pd.DataFrame.fillna(value). Only works if
             result is offset.
-        fill_method (value, optional): Type of fill method. Only works if
-            result is offset.
 
     Returns:
         pd.Series: New feature generated.
@@ -36,7 +35,7 @@ def ohlc4(
     offset = v_offset(offset)
 
     # Calculate
-    avg = 0.25 * (open_.values + high.values + low.values + close.values)
+    avg = 0.25 * (open_.to_numpy() + high.to_numpy() + low.to_numpy() + close.to_numpy())
     ohlc4 = Series(avg, index=close.index)
 
     # Offset
@@ -46,8 +45,6 @@ def ohlc4(
         # Fill
         if "fillna" in kwargs:
             ohlc4.fillna(kwargs["fillna"], inplace=True)
-        if "fill_method" in kwargs:
-            ohlc4.fillna(method=kwargs["fill_method"], inplace=True)
 
     # Name and Category
     ohlc4.name = "OHLC4"

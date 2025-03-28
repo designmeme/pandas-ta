@@ -5,6 +5,7 @@ from pandas_ta.maps import Imports
 from pandas_ta.utils import v_offset, v_series, v_talib
 
 
+
 def wcp(
     high: Series, low: Series, close: Series, talib: bool = None,
     offset: Int = None, **kwargs: DictLike
@@ -27,7 +28,6 @@ def wcp(
 
     Kwargs:
         fillna (value, optional): pd.DataFrame.fillna(value)
-        fill_method (value, optional): Type of fill method
 
     Returns:
         pd.Series: New feature generated.
@@ -49,7 +49,7 @@ def wcp(
         from talib import WCLPRICE
         wcp = WCLPRICE(high, low, close)
     else:
-        weight = high.values + low.values + 2 * close.values
+        weight = high.to_numpy() + low.to_numpy() + 2 * close.to_numpy()
         wcp = Series(weight, index=close.index)
 
     # Offset
@@ -59,8 +59,6 @@ def wcp(
     # Fill
     if "fillna" in kwargs:
         wcp.fillna(kwargs["fillna"], inplace=True)
-    if "fill_method" in kwargs:
-        wcp.fillna(method=kwargs["fill_method"], inplace=True)
 
     # Name and Category
     wcp.name = "WCP"

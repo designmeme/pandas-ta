@@ -10,6 +10,7 @@ from pandas_ta.utils import (
 )
 
 
+
 def kdj(
     high: Series, low: Series, close: Series,
     length: Int = None, signal: Int = None,
@@ -37,7 +38,6 @@ def kdj(
 
     Kwargs:
         fillna (value, optional): pd.DataFrame.fillna(value)
-        fill_method (value, optional): Type of fill method
 
     Returns:
         pd.DataFrame: k, d, and j columns
@@ -77,21 +77,17 @@ def kdj(
         k.fillna(kwargs["fillna"], inplace=True)
         d.fillna(kwargs["fillna"], inplace=True)
         j.fillna(kwargs["fillna"], inplace=True)
-    if "fill_method" in kwargs:
-        k.fillna(method=kwargs["fill_method"], inplace=True)
-        d.fillna(method=kwargs["fill_method"], inplace=True)
-        j.fillna(method=kwargs["fill_method"], inplace=True)
 
     # Name and Category
-    _params = f"_{length}_{signal}"
-    k.name = f"K{_params}"
-    d.name = f"D{_params}"
-    j.name = f"J{_params}"
+    _props = f"_{length}_{signal}"
+    k.name = f"K{_props}"
+    d.name = f"D{_props}"
+    j.name = f"J{_props}"
     k.category = d.category = j.category = "momentum"
 
     data = {k.name: k, d.name: d, j.name: j}
     df = DataFrame(data, index=close.index)
-    df.name = f"KDJ{_params}"
+    df.name = f"KDJ{_props}"
     df.category = "momentum"
 
     return df

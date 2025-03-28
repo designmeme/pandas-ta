@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from distutils.core import setup
+from setuptools import setup
 
 long_description = "Pandas Technical Analysis, Pandas TA, is a free, Open Source, and easy to use Technical Analysis library with a Pandas DataFrame Extension. It has over 200 indicators, utility functions and TA Lib Candlestick Patterns. Beyond TA feature generation, it has a flat library structure, it's own DataFrame Extension (called 'ta'), Custom Indicator Studies and Independent Custom Directory."
 
@@ -16,11 +16,10 @@ setup(
         "pandas_ta.transform",
         "pandas_ta.trend",
         "pandas_ta.utils",
-        "pandas_ta.utils.data",
         "pandas_ta.volatility",
         "pandas_ta.volume"
     ],
-    version=".".join(("0", "4", "9b")),
+    version=".".join(("0", "4", "19b")),
     description=long_description,
     long_description=long_description,
     author="Kevin Johnson",
@@ -37,11 +36,8 @@ setup(
     license="The MIT License (MIT)",
     classifiers=[
         "Development Status :: 4 - Beta",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Operating System :: OS Independent",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
@@ -57,22 +53,31 @@ setup(
         "pandas_ta": ["py.typed"],
         "data": ["data/*.csv"],
     },
-    install_requires=["pandas", "numba"],
+    install_requires=[
+        "numba>=0.59.0",
+        "numpy==1.26.4",
+        "pandas>=2.2.0",
+        "pandas-datareader",
+        "scipy>=1.12"
+    ],
     # List additional groups of dependencies here (e.g. development dependencies).
     # You can install these using the following syntax, for example:
     # $ pip install -e .[full,test]     # locally
     # $ pip install -U pandas_ta[full]  # pip
     extras_require={
         "full": [
-            "alphaVantage-api", "matplotlib", "mplfinance", "numba", "polygon",
-            "python-dotenv", "scipy", "sklearn", "statsmodels", "stochastic",
-            "ta-lib", "tqdm", "vectorbt", "yfinance",
+            "alphaVantage-api", "matplotlib", "mplfinance",
+            "python-dotenv", "sklearn", "statsmodels", "stochastic",
+            "TA-Lib>=0.4.28", "tqdm", "vectorbt", "yfinance>=0.2.36"
         ],
         "test": [
+            "numba>=0.59.0",
+            "numpy==1.26.4",
+            "pandas>=2.2.0",
+            "pandas_datareader>=0.10.0",
             "pytest==7.1.2",
-            "pandas_datareader==0.10.0",
-            "ta-lib",
-            "numba"
+            "TA-Lib>=0.4.28",
+            "yfinance>=0.2.36"
         ],
     },
 )

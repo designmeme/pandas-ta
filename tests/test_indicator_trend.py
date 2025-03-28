@@ -13,8 +13,8 @@ sample_adx_data = read_csv(
     f"data/ADX_D.csv",
     index_col=0,
     parse_dates=True,
-    infer_datetime_format=True,
-    keep_date_col=True,
+    # date_format="%f"
+    date_format="%m/%d/%Y %I:%M:%S `%p"
 )
 
 expected_tv_adx = DataFrame({
@@ -45,8 +45,7 @@ def test_adx(df):
 
     try:
         expected = tal.ADX(df.high, df.low, df.close)
-        result.drop(result.columns[1], axis=1, inplace=True)
-        pdt.assert_series_equal(result, expected, check_names=False)
+        pdt.assert_series_equal(result.iloc[0], expected, check_names=False)
     except AssertionError:
         try:
             corr = ta.utils.df_error_analysis(result, expected)
@@ -181,6 +180,28 @@ def test_dpo(df):
     assert result.name == "DPO_20"
 
 
+def test_ht_trendline(df):
+    result = ta.ht_trendline(df.close, talib=False)
+    assert isinstance(result, Series)
+    assert result.name == "HT_TL"
+
+    try:
+        expected = tal.HT_TRENDLINE(df.close)
+        corr = ta.utils.df_error_analysis(result, expected)
+        pdt.assert_series_equal(result, expected, check_names=False)
+    except AssertionError:
+        try:
+            corr = ta.utils.df_error_analysis(result, expected)
+            print(f"{corr=}")
+            assert corr > CORRELATION_THRESHOLD
+        except Exception as ex:
+            error_analysis(result, CORRELATION, ex)
+
+    result = ta.ht_trendline(df.close)
+    assert isinstance(result, Series)
+    assert result.name == "HT_TL"
+
+
 def test_increasing(df):
     result = ta.increasing(df.close)
     assert isinstance(result, Series)
@@ -244,12 +265,6 @@ def test_trendflex(df):
     assert result.name == "TRENDFLEX_20_20_0.04"
 
 
-def test_ttm_trend(df):
-    result = ta.ttm_trend(df.high, df.low, df.close)
-    assert isinstance(result, DataFrame)
-    assert result.name == "TTMTREND_6"
-
-
 def test_vhf(df):
     result = ta.vhf(df.high, df.low, df.close)
     assert isinstance(result, Series)
@@ -260,6 +275,30 @@ def test_vortex(df):
     result = ta.vortex(df.high, df.low, df.close)
     assert isinstance(result, DataFrame)
     assert result.name == "VTX_14"
+
+
+def test_zigzag(df):
+    result = ta.zigzag(df.high, df.low)
+    assert isinstance(result, DataFrame)
+    assert result.name == "ZIGZAG_5.0%_10"
+
+    result = ta.zigzag(df.high, df.low, df.close)
+    assert isinstance(result, DataFrame)
+    assert result.name == "ZIGZAG_5.0%_10"
+
+    notna = result.iloc[:,0].notna()
+    high_pivotsdf = result[notna & (result["ZIGZAGs_5.0%_10"]==1)]
+    assert isinstance(high_pivotsdf, DataFrame)
+    assert high_pivotsdf.shape[0] == 1
+
+    low_pivotsdf  = result[notna & (result["ZIGZAGs_5.0%_10"]==-1)]
+    assert isinstance(low_pivotsdf, DataFrame)
+    assert low_pivotsdf.shape[0] == 1
+
+    all_pivotsdf = result[notna]
+    assert isinstance(all_pivotsdf, DataFrame)
+    assert all_pivotsdf.shape[0] == low_pivotsdf.shape[0] + high_pivotsdf.shape[0]
+
 
 
 # DataFrame Extension Tests
@@ -320,6 +359,11 @@ def test_ext_dpo(df):
     assert df.columns[-1] == "DPO_20"
 
 
+def test_ext_ht_trendline(df):
+    df.ta.ht_trendline(append=True)
+    assert df.columns[-1] == "HT_TL"
+
+
 def test_ext_increasing(df):
     df.ta.increasing(append=True)
     assert df.columns[-1] == "INC_1"
@@ -370,11 +414,6 @@ def test_ext_trendflex(df):
     assert df.columns[-1] == "TRENDFLEX_20_20_0.04"
 
 
-def test_ext_ttm_trend(df):
-    df.ta.ttm_trend(append=True)
-    assert df.columns[-1] == "TTM_TRND_6"
-
-
 def test_ext_vhf(df):
     df.ta.vhf(append=True)
     assert df.columns[-1] == "VHF_28"
@@ -383,3 +422,8 @@ def test_ext_vhf(df):
 def test_ext_vortex(df):
     df.ta.vortex(append=True)
     assert list(df.columns[-2:]) == ["VTXP_14", "VTXM_14"]
+
+
+def test_ext_zigzag(df):
+    df.ta.zigzag(append=True)
+    assert list(df.columns[-3:]) == ["ZIGZAGs_5.0%_10", "ZIGZAGv_5.0%_10", "ZIGZAGd_5.0%_10"]

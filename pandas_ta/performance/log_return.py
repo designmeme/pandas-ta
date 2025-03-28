@@ -5,6 +5,7 @@ from pandas_ta._typing import DictLike, Int
 from pandas_ta.utils import v_bool, v_offset, v_pos_default, v_series
 
 
+
 def log_return(
     close: Series, length: Int = None, cumulative: bool = None,
     offset: Int = None, **kwargs: DictLike
@@ -26,7 +27,6 @@ def log_return(
 
     Kwargs:
         fillna (value, optional): pd.DataFrame.fillna(value)
-        fill_method (value, optional): Type of fill method
 
     Returns:
         pd.Series: New feature generated.
@@ -42,7 +42,7 @@ def log_return(
     offset = v_offset(offset)
 
     # Calculate
-    np_close = close.values
+    np_close = close.to_numpy()
     if cumulative:
         r = np_close / np_close[0]
     else:
@@ -57,8 +57,6 @@ def log_return(
     # Fill
     if "fillna" in kwargs:
         log_return.fillna(kwargs["fillna"], inplace=True)
-    if "fill_method" in kwargs:
-        log_return.fillna(method=kwargs["fill_method"], inplace=True)
 
     # Name and Category
     log_return.name = f"{'CUM' if cumulative else ''}LOGRET_{length}"

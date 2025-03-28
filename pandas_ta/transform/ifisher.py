@@ -6,6 +6,7 @@ from pandas_ta.utils import v_int, v_offset, v_scalar, v_series
 from .remap import remap
 
 
+
 def ifisher(
     close: Series,
     amp: IntFloat = None, signal_offset: Int = None,
@@ -43,7 +44,6 @@ def ifisher(
 
     Kwargs:
         fillna (value, optional): pd.DataFrame.fillna(value)
-        fill_method (value, optional): Type of fill method
 
     Returns:
         pd.DataFrame: New feature generated.
@@ -55,14 +55,14 @@ def ifisher(
     offset = v_offset(offset)
 
     # Calculate
-    np_close = close.values
+    np_close = close.to_numpy()
     is_remapped = logical_and(np_close >= -1, np_close <= 1)
     if not all(is_remapped):
         np_max, np_min = max(np_close), min(np_close)
         close_map = remap(close, from_min=np_min, from_max=np_max, to_min=-1, to_max=1)
-        if close_map is None or all(isnan(close_map.values)):
+        if close_map is None or all(isnan(close_map.to_numpy())):
             return  # Emergency Break
-        np_close = close_map.values
+        np_close = close_map.to_numpy()
     amped = exp(amp * np_close)
     result = (amped - 1) / (amped + 1)
 
@@ -81,9 +81,6 @@ def ifisher(
     if "fillna" in kwargs:
         inv_fisher.fillna(kwargs["fillna"], inplace=True)
         signal.fillna(kwargs["fillna"], inplace=True)
-    if "fill_method" in kwargs:
-        inv_fisher.fillna(method=kwargs["fill_method"], inplace=True)
-        signal.fillna(method=kwargs["fill_method"], inplace=True)
 
     # Name and Category
     _props = f"_{amp}"

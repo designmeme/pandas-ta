@@ -1,15 +1,30 @@
 # -*- coding: utf-8 -*-
-from numpy import NaN, greater, zeros_like
+from numpy import greater, nan, zeros_like
 from numba import njit
-from pandas import DataFrame, Series, Timedelta, infer_freq, to_datetime
-from pandas_ta._typing import Array, DictLike
-from pandas_ta.utils import np_non_zero_range, v_datetime_ordered, v_series, v_str
+from pandas import DataFrame, DateOffset, Series, infer_freq
+from pandas_ta._typing import DictLike
+from pandas_ta.utils import (
+    nb_non_zero_range,
+    v_datetime_ordered,
+    v_series,
+    v_str
+)
+
+# Support for Pandas v1.4.x and v2.2.x
+td_mapping = {
+    'Y': 'years',
+    'YE': 'years',
+    'M': 'months',
+    'ME': 'months',
+    'D': 'days',
+}
 
 
-@njit
+
+@njit(cache=True)
 def pivot_camarilla(high, low, close):
     tp = (high + low + close) / 3
-    hl_range = np_non_zero_range(high, low)
+    hl_range = nb_non_zero_range(high, low)
 
     s1 = close - 11 / 120 * hl_range
     s2 = close - 11 / 60 * hl_range
@@ -24,10 +39,10 @@ def pivot_camarilla(high, low, close):
     return tp, s1, s2, s3, s4, r1, r2, r3, r4
 
 
-@njit
+@njit(cache=True)
 def pivot_classic(high, low, close):
     tp = (high + low + close) / 3
-    hl_range = np_non_zero_range(high, low)
+    hl_range = nb_non_zero_range(high, low)
 
     s1 = 2 * tp - high
     s2 = tp - hl_range
@@ -42,7 +57,7 @@ def pivot_classic(high, low, close):
     return tp, s1, s2, s3, s4, r1, r2, r3, r4
 
 
-@njit
+@njit(cache=True)
 def pivot_demark(open_, high, low, close):
     if (open_ == close).all():
         tp = 0.25 * (high + low + 2 * close)
@@ -57,10 +72,10 @@ def pivot_demark(open_, high, low, close):
     return tp, s1, r1
 
 
-@njit
+@njit(cache=True)
 def pivot_fibonacci(high, low, close):
     tp = (high + low + close) / 3
-    hl_range = np_non_zero_range(high, low)
+    hl_range = nb_non_zero_range(high, low)
 
     s1 = tp - 0.382 * hl_range
     s2 = tp - 0.618 * hl_range
@@ -73,10 +88,10 @@ def pivot_fibonacci(high, low, close):
     return tp, s1, s2, s3, r1, r2, r3
 
 
-@njit
+@njit(cache=True)
 def pivot_traditional(high, low, close):
     tp = (high + low + close) / 3
-    hl_range = np_non_zero_range(high, low)
+    hl_range = nb_non_zero_range(high, low)
 
     s1 = 2 * tp - high
     s2 = tp - hl_range
@@ -91,10 +106,10 @@ def pivot_traditional(high, low, close):
     return tp, s1, s2, s3, s4, r1, r2, r3, r4
 
 
-@njit
+@njit(cache=True)
 def pivot_woodie(open_, high, low):
     tp = (2 * open_ + high + low) / 4
-    hl_range = np_non_zero_range(high, low)
+    hl_range = nb_non_zero_range(high, low)
 
     s1 = 2 * tp - high
     s2 = tp - hl_range
@@ -139,7 +154,6 @@ def pivots(
 
     Kwargs:
         fillna (value, optional): pd.DataFrame.fillna(value)
-        fill_method (value, optional): Type of fill method
 
     Returns:
         pd.DataFrame: New feature generated.
@@ -162,7 +176,7 @@ def pivots(
         return  # Emergency Break
 
     if not v_datetime_ordered(close):
-        print("[!] Pivots requires a datetime ordered index.")
+        print("[!] Pivots requires an ordered DatetimeIndex.")
         return
 
     dt_index = close.index
@@ -190,14 +204,14 @@ def pivots(
             index=dt_index
         )
 
-    np_open = df.open.values
-    np_high = df.high.values
-    np_low = df.low.values
-    np_close = df.close.values
+    np_open = df.open.to_numpy()
+    np_high = df.high.to_numpy()
+    np_low = df.low.to_numpy()
+    np_close = df.close.to_numpy()
 
     # Create nan arrays for "demark" and "fibonacci" pivots
     _nan_array = zeros_like(np_close)
-    _nan_array[:] = NaN
+    _nan_array[:] = nan
     tp = s1 = s2 = s3 = s4 = r1 = r2 = r3 = r4 = _nan_array
 
     # Calculate
@@ -231,13 +245,16 @@ def pivots(
     df[f"{_props}_R1"], df[f"{_props}_R2"] = r1, r2
     df[f"{_props}_R3"], df[f"{_props}_R4"] = r3, r4
 
-    df.index = df.index + Timedelta(1, anchor.lower())
+    time_unit = td_mapping.get(anchor.upper(), None)
+    if time_unit:
+        time_delta = DateOffset(**{time_unit: 1})
+        df.index = df.index + time_delta
+    else:
+        print(f"[!] Unsupported time anchor {anchor}.")
+
     if freq is not anchor:
         df = df.reindex(dt_index, method="ffill")
     df = df.iloc[:,4:]
-
-    # hm = df.loc[lambda x: (x.index.hour == 23) & (x.index.minute == 59)].iloc[0].name
-    # df.loc[:hm] = NaN
 
     if method in ["demark", "fibonacci"]:
         df.drop(columns=[x for x in df.columns if all(df[x].isna())], inplace=True)

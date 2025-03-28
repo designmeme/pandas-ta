@@ -8,6 +8,7 @@ from .cksp import cksp
 from .decay import decay
 from .decreasing import decreasing
 from .dpo import dpo
+from .ht_trendline import ht_trendline
 from .increasing import increasing
 from .long_run import long_run
 from .psar import psar
@@ -16,10 +17,10 @@ from .rwi import rwi
 from .short_run import short_run
 from .trendflex import trendflex
 from .tsignals import tsignals
-from .ttm_trend import ttm_trend
 from .vhf import vhf
 from .vortex import vortex
 from .xsignals import xsignals
+from .zigzag import zigzag
 
 __all__ = [
     "adx",
@@ -31,6 +32,7 @@ __all__ = [
     "decay",
     "decreasing",
     "dpo",
+    "ht_trendline",
     "increasing",
     "long_run",
     "psar",
@@ -39,8 +41,8 @@ __all__ = [
     "short_run",
     "trendflex",
     "tsignals",
-    "ttm_trend",
     "vhf",
     "vortex",
-    "xsignals"
+    "xsignals",
+    "zigzag",
 ]

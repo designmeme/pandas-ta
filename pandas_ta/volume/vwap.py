@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
+from warnings import simplefilter
 from pandas import DataFrame, Series
 from pandas_ta._typing import DictLike, Int, List
 from pandas_ta.overlap import hlc3
 from pandas_ta.utils import v_datetime_ordered, v_list, v_offset, v_series
+
 
 
 def vwap(
@@ -39,7 +41,6 @@ def vwap(
 
     Kwargs:
         fillna (value, optional): pd.DataFrame.fillna(value)
-        fill_method (value, optional): Type of fill method
 
     Returns:
         pd.Series: New feature generated.
@@ -67,12 +68,13 @@ def vwap(
     typical_price = hlc3(high=high, low=low, close=close)
     if not v_datetime_ordered(volume) or \
         not v_datetime_ordered(typical_price):
-        print("[!] VWAP requires a datetime ordered index.")
+        print("[!] VWAP requires an ordered DatetimeIndex.")
         return
 
     # Calculate
     _props = f"VWAP_{anchor}"
     wp = typical_price * volume
+    simplefilter(action="ignore", category=UserWarning)
     vwap = wp.groupby(wp.index.to_period(anchor)).cumsum() \
         / volume.groupby(volume.index.to_period(anchor)).cumsum()
 
@@ -112,11 +114,6 @@ def vwap(
             df.fillna(kwargs["fillna"], inplace=True)
         else:
             vwap.fillna(kwargs["fillna"], inplace=True)
-    if "fill_method" in kwargs:
-        if bands and not df.empty:
-            df.fillna(method=kwargs["fill_method"], inplace=True)
-        else:
-            vwap.fillna(method=kwargs["fill_method"], inplace=True)
 
     if bands and not df.empty:
         return df

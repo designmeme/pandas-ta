@@ -14,6 +14,7 @@ from pandas_ta.utils import (
 )
 
 
+
 def chandelier_exit(
     high: Series, low: Series, close: Series,
     high_length: Int = None, low_length: Int = None,
@@ -50,7 +51,6 @@ def chandelier_exit(
 
     Kwargs:
         fillna (value, optional): pd.DataFrame.fillna(value)
-        fill_method (value, optional): Type of fill method
 
     Returns:
         pd.DataFrame: CHDLREXTl (long), CHDLREXTs (short), CHDLREXTd (direction)
@@ -97,8 +97,8 @@ def chandelier_exit(
     downtrend = -(close < short.shift(drift)).astype(int)
 
     direction = uptrend + downtrend
-    if direction.iat[0] == 0:
-        direction.iat[0] = 1
+    if direction.iloc[0] == 0:
+        direction.iloc[0] = 1
     direction = direction.replace(0, nan).ffill()
 
     # Offset
@@ -112,10 +112,6 @@ def chandelier_exit(
         long.fillna(kwargs["fillna"], inplace=True)
         short.fillna(kwargs["fillna"], inplace=True)
         direction.fillna(kwargs["fillna"], inplace=True)
-    if "fill_method" in kwargs:
-        long.fillna(method=kwargs["fill_method"], inplace=True)
-        short.fillna(method=kwargs["fill_method"], inplace=True)
-        direction.fillna(method=kwargs["fill_method"], inplace=True)
 
     # Name and Category
     _name = "CHDLREXT"

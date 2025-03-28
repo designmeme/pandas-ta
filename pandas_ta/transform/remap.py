@@ -4,6 +4,7 @@ from pandas_ta._typing import DictLike, Int, IntFloat
 from pandas_ta.utils import v_float, v_offset, v_series
 
 
+
 def remap(
     close: Series, from_min: IntFloat = None, from_max: IntFloat = None,
     to_min: IntFloat = None, to_max: IntFloat = None,
@@ -33,7 +34,6 @@ def remap(
 
     Kwargs:
         fillna (value, optional): pd.DataFrame.fillna(value)
-        fill_method (value, optional): Type of fill method
 
     Returns:
         pd.Series: New feature generated.
@@ -50,7 +50,7 @@ def remap(
     frange, trange = from_max - from_min, to_max - to_min
     if frange <= 0 or trange <= 0:
         return
-    result = to_min + (trange / frange) * (close.values - from_min)
+    result = to_min + (trange / frange) * (close.to_numpy() - from_min)
     result = Series(result, index=close.index)
 
     # Offset
@@ -60,8 +60,6 @@ def remap(
     # Fill
     if "fillna" in kwargs:
         result.fillna(kwargs["fillna"], inplace=True)
-    if "fill_method" in kwargs:
-        result.fillna(method=kwargs["fill_method"], inplace=True)
 
     # Name and Category
     result.name = f"REMAP_{from_min}_{from_max}_{to_min}_{to_max}"

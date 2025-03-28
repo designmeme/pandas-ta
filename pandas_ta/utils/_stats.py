@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
-from numpy import array, infty, log, nan, pi, sqrt
+from numpy import array, inf, log, nan, pi, sqrt
 from pandas_ta._typing import Array, IntFloat, Number, Union
 from pandas_ta.maps import Imports
 from pandas_ta.utils import hpoly
 
 __all__ = ["inv_norm"]
+
 
 
 def _gaussian_poly_coefficients() -> Array:
@@ -75,11 +76,10 @@ def inv_norm(value: IntFloat) -> Union[None, Number]:
     negate = True
     v = value
 
-    # if v == 0.0: return -npInfty
     if v == 0.0:
-        return -infty
+        return -inf
     if v == 1.0:
-        return infty
+        return inf
     if v < 0.0 or value > 1.0:
         return nan
 

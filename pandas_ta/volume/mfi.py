@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
-from pandas import DataFrame, Series
+from sys import float_info as sflt
+from numpy import convolve, maximum, nan, ones, roll, where
+from pandas import Series
 from pandas_ta._typing import DictLike, Int
 from pandas_ta.maps import Imports
 from pandas_ta.overlap import hlc3
 from pandas_ta.utils import (
+    nb_non_zero_range,
     v_drift,
     v_offset,
     v_pos_default,
     v_series,
     v_talib
 )
+
 
 
 def mfi(
@@ -38,7 +42,6 @@ def mfi(
 
     Kwargs:
         fillna (value, optional): pd.DataFrame.fillna(value)
-        fill_method (value, optional): Type of fill method
 
     Returns:
         pd.Series: New feature generated.
@@ -63,27 +66,18 @@ def mfi(
         from talib import MFI
         mfi = MFI(high, low, close, volume, length)
     else:
-        typical_price = hlc3(high=high, low=low, close=close, talib=mode_tal)
-        raw_money_flow = typical_price * volume
+        m, _ones = close.size, ones(length)
 
-        tdf = DataFrame({
-            "diff": 0,
-            "rmf": raw_money_flow,
-            "+mf": 0,
-            "-mf": 0
-        })
+        tp = (high.to_numpy() + low.to_numpy() + close.to_numpy()) / 3.0
+        smf = tp * volume.to_numpy() * where(tp > roll(tp, shift=drift), 1, -1)
 
-        tdf.loc[(typical_price.diff(drift) > 0), "diff"] = 1
-        tdf.loc[tdf["diff"] == 1, "+mf"] = raw_money_flow
+        pos, neg = maximum(smf, 0), maximum(-smf, 0)
+        avg_gain, avg_loss = convolve(pos, _ones)[:m], convolve(neg, _ones)[:m]
 
-        tdf.loc[(typical_price.diff(drift) < 0), "diff"] = -1
-        tdf.loc[tdf["diff"] == -1, "-mf"] = raw_money_flow
+        _mfi = (100.0 * avg_gain) / (avg_gain + avg_loss + sflt.epsilon)
+        _mfi[:length] = nan
 
-        psum = tdf["+mf"].rolling(length).sum()
-        nsum = tdf["-mf"].rolling(length).sum()
-        tdf["mr"] = psum / nsum
-        mfi = 100 * psum / (psum + nsum)
-        tdf["mfi"] = mfi
+        mfi = Series(_mfi, index=close.index)
 
     # Offset
     if offset != 0:
@@ -92,8 +86,6 @@ def mfi(
     # Fill
     if "fillna" in kwargs:
         mfi.fillna(kwargs["fillna"], inplace=True)
-    if "fill_method" in kwargs:
-        mfi.fillna(method=kwargs["fill_method"], inplace=True)
 
     # Name and Category
     mfi.name = f"MFI_{length}"

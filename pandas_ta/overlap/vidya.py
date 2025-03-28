@@ -4,6 +4,7 @@ from pandas import Series
 from pandas_ta._typing import DictLike, Int
 from pandas_ta.maps import Imports
 from pandas_ta.utils import (
+    v_drift,
     v_offset,
     v_pos_default,
     v_series,
@@ -11,9 +12,10 @@ from pandas_ta.utils import (
 )
 
 
+
 def vidya(
     close: Series, length: Int = None,
-    offset: Int = None,
+    drift: Int = None, offset: Int = None,
     talib: bool = None, **kwargs: DictLike
 ) -> Series:
     """Variable Index Dynamic Average (VIDYA)
@@ -32,11 +34,9 @@ def vidya(
         close (pd.Series): Series of 'close's
         length (int): It's period. Default: 14
         offset (int): How many periods to offset the result. Default: 0
-        talib (bool): If TA Lib is installed and talib is True, Use
-            the TA Lib version's CMO. Default: True
+
     Kwargs:
         fillna (value, optional): pd.DataFrame.fillna(value)
-        fill_method (value, optional): Type of fill method
 
     Returns:
         pd.Series: New feature generated.
@@ -49,6 +49,7 @@ def vidya(
         return
 
     mode_tal = v_talib(talib)
+    drift = v_drift(drift)
     offset = v_offset(offset)
 
     # Calculate
@@ -59,13 +60,13 @@ def vidya(
         from talib import CMO
         cmo_ = CMO(close, length)
     else:
-        from pandas_ta.momentum.cmo import cmo
-        cmo_ = cmo(close, length)
-    abs_cmo = cmo_.abs() / 100
+        cmo_ = _cmo(close, length, drift)
+    abs_cmo = cmo_.abs().astype(float)
 
     vidya = Series(0.0, index=close.index)
     for i in range(length, m):
-        vidya.iat[i] = alpha * abs_cmo.iat[i] * close.iat[i] + vidya.iat[i - 1] * (1 - alpha * abs_cmo.iat[i])
+        vidya.iloc[i] = alpha * abs_cmo.iloc[i] * close.iloc[i] + \
+            vidya.iloc[i - 1] * (1 - alpha * abs_cmo.iloc[i])
     vidya.replace({0: nan}, inplace=True)
 
     # Offset
@@ -75,11 +76,24 @@ def vidya(
     # Fill
     if "fillna" in kwargs:
         vidya.fillna(kwargs["fillna"], inplace=True)
-    if "fill_method" in kwargs:
-        vidya.fillna(method=kwargs["fill_method"], inplace=True)
 
     # Name and Category
     vidya.name = f"VIDYA_{length}"
     vidya.category = "overlap"
 
     return vidya
+
+
+def _cmo(source: Series, n: int, d: int):
+    """Chande Momentum Oscillator (CMO) Patch
+    For some reason: from pandas_ta.momentum import cmo causes
+    pandas_ta.momentum.coppock to not be able to import it's
+    wma like from pandas_ta.overlap import wma?
+    Weird Circular TypeError!?
+    """
+    mom = source.diff(d)
+    positive = mom.copy().clip(lower=0)
+    negative = mom.copy().clip(upper=0).abs()
+    pos_sum = positive.rolling(n).sum()
+    neg_sum = negative.rolling(n).sum()
+    return (pos_sum - neg_sum) / (pos_sum + neg_sum)

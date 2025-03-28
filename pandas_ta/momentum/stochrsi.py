@@ -2,20 +2,23 @@
 from pandas import DataFrame, Series
 from pandas_ta._typing import DictLike, Int
 from pandas_ta.ma import ma
+from pandas_ta.maps import Imports
 from pandas_ta.momentum import rsi
 from pandas_ta.utils import (
     non_zero_range,
     v_mamode,
     v_offset,
     v_pos_default,
-    v_series
+    v_series,
+    v_talib
 )
+
 
 
 def stochrsi(
     close: Series, length: Int = None, rsi_length: Int = None,
     k: Int = None, d: Int = None, mamode: str = None,
-    offset: Int = None, **kwargs: DictLike
+    talib: bool = None, offset: Int = None, **kwargs: DictLike
 ) -> DataFrame:
     """Stochastic (STOCHRSI)
 
@@ -40,11 +43,12 @@ def stochrsi(
         k (int): The Fast %K period. Default: 3
         d (int): The Slow %K period. Default: 3
         mamode (str): See ``help(ta.ma)``. Default: 'sma'
+        talib (bool): If TA Lib is installed and talib is True, uses
+            TA Lib's RSI. Default: True
         offset (int): How many periods to offset the result. Default: 0
 
     Kwargs:
         fillna (value, optional): pd.DataFrame.fillna(value)
-        fill_method (value, optional): Type of fill method
 
     Returns:
         pd.DataFrame: RSI %K, RSI %D columns.
@@ -61,9 +65,15 @@ def stochrsi(
         return
 
     mamode = v_mamode(mamode, "sma")
+    mode_tal = v_talib(talib)
     offset = v_offset(offset)
 
     # Calculate
+    # if Imports["talib"] and mode_tal:
+    #     from talib import RSI
+    #     rsi_ = RSI(close, length)
+    # else:
+
     rsi_ = rsi(close, length=rsi_length)
     lowest_rsi = rsi_.rolling(length).min()
     highest_rsi = rsi_.rolling(length).max()
@@ -82,9 +92,6 @@ def stochrsi(
     if "fillna" in kwargs:
         stochrsi_k.fillna(kwargs["fillna"], inplace=True)
         stochrsi_d.fillna(kwargs["fillna"], inplace=True)
-    if "fill_method" in kwargs:
-        stochrsi_k.fillna(method=kwargs["fill_method"], inplace=True)
-        stochrsi_d.fillna(method=kwargs["fill_method"], inplace=True)
 
     # Name and Category
     _name = "STOCHRSI"

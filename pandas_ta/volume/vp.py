@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+from warnings import simplefilter
+
 from numpy import array_split, mean, sum
 from pandas import cut, concat, DataFrame, Series
 from pandas_ta._typing import DictLike, Int
 from pandas_ta.utils import signed_series, v_bool, v_pos_default, v_series
+
 
 
 def vp(
@@ -30,7 +33,6 @@ def vp(
 
     Kwargs:
         fillna (value, optional): pd.DataFrame.fillna(value)
-        fill_method (value, optional): Type of fill method
 
     Returns:
         pd.DataFrame: New feature generated.
@@ -67,23 +69,33 @@ def vp(
     total_volume_col = f"total_{volume_col}"
     vp.columns = [close_col, pos_volume_col, neg_volume_col, neut_volume_col]
 
+    simplefilter(action="ignore", category=FutureWarning)
     # sort: Sort by close before splitting into ranges. Default: False
     # If False, it sorts by date index or chronological versus by price
     if sort:
         vp[mean_price_col] = vp[close_col]
+
         vpdf = vp.groupby(
-            cut(vp[close_col], width, include_lowest=True, precision=2)
-        ).agg({mean_price_col: mean, pos_volume_col: sum, neg_volume_col: sum})
+            cut(vp[close_col], width, include_lowest=True, precision=2),
+            observed=False
+        ).agg({
+            mean_price_col: mean,
+            pos_volume_col: sum,
+            neg_volume_col: sum,
+            neut_volume_col: sum
+        })
+
         vpdf[low_price_col] = [x.left for x in vpdf.index]
         vpdf[high_price_col] = [x.right for x in vpdf.index]
         vpdf = vpdf.reset_index(drop=True)
+
         vpdf = vpdf[[
             low_price_col, mean_price_col, high_price_col,
             pos_volume_col, neg_volume_col, neut_volume_col
         ]]
     else:
         vp_ranges = array_split(vp, width)
-        result = ({
+        result = list({
             low_price_col: r[close_col].min(),
             mean_price_col: r[close_col].mean(),
             high_price_col: r[close_col].max(),
@@ -91,14 +103,14 @@ def vp(
             neg_volume_col: r[neg_volume_col].sum(),
             neut_volume_col: r[neut_volume_col].sum(),
         } for r in vp_ranges)
+
         vpdf = DataFrame(result)
+
     vpdf[total_volume_col] = vpdf[pos_volume_col] + vpdf[neg_volume_col]
 
     # Fill
     if "fillna" in kwargs:
         vpdf.fillna(kwargs["fillna"], inplace=True)
-    if "fill_method" in kwargs:
-        vpdf.fillna(method=kwargs["fill_method"], inplace=True)
 
     # Name and Category
     vpdf.name = f"VP_{width}"

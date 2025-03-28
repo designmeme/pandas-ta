@@ -87,7 +87,7 @@ class AnalysisIndicators(object):
 
     4. Ways of calling an indicator.
     4a. Standard: Calling just the APO indicator without "ta" DataFrame extension.
-    >>> ta.apo(df["close"])
+    >>> ta.apo(df["close"])  # or ta.apo(df.close)
     4b. DataFrame Extension: Calling just the APO indicator with "ta" DataFrame extension.
     >>> df.ta.apo()
     4c. DataFrame Extension (kind): Calling APO using 'kind'
@@ -172,23 +172,12 @@ class AnalysisIndicators(object):
 
     @cores.setter
     def cores(self, value: Int) -> None:
-        """property: df.ta.cores = integer"""
+        """property: df.ta.cores = 0 <= int <= cpu_count"""
         cpus = cpu_count()
         if value is not None and isinstance(value, int):
             self._cores = int(value) if 0 <= value <= cpus else cpus
         else:
             self._cores = cpus
-
-    @property
-    def ds(self) -> str:
-        """Returns the current Data Source. Default: "yf"."""
-        return self._ds
-
-    @ds.setter
-    def ds(self, value: str) -> None:
-        """property: df.ta.ds = "yf" """
-        if isinstance(value, str) and len(value):
-            self._ds = value
 
     @property
     def exchange(self) -> str:
@@ -492,7 +481,7 @@ class AnalysisIndicators(object):
             "config",
             "cores",
             # "custom",
-            "ds",
+            # "ds",
             "exchange",
             "last_run",
             "sample",
@@ -579,7 +568,8 @@ class AnalysisIndicators(object):
                 Default: Number of cores of the OS
             exclude (list): List of indicator names to exclude. Some are
                 excluded by default for various reasons; they require additional
-                sources, performance (td_seq), not a time series chart (vp) etc.
+                sources (tsignals, xsignals), performance, , not a time series
+                chart (vp) etc.
             name (str): Select all indicators or indicators by
                 Category such as: "candles", "cycles", "momentum", "overlap",
                 "performance", "statistics", "trend", "volatility", "volume", or
@@ -761,22 +751,16 @@ class AnalysisIndicators(object):
         if returns:
             return self._df
 
-    def ticker(self, ticker: str, ds: str = None, **kwargs: DictLike):
+    def ticker(self, ticker: str = None, period: str = None, **kwargs: DictLike):
         """ticker
 
-        This method downloads Historical Data if the package yfinance is
-        installed. Additionally it can run a ta.Study; Builtin or Custom. It
-        returns a DataFrame if there the DataFrame is not empty, otherwise it
-        exits. For additional yfinance arguments, use help(ta.yf).
-        Alternatively, if you have a Polygon API Key, you can use it as well;
-        use help(ta.polygon_api) for more information.
+        This method downloads Historical Data using the yfinance package if it
+        is installed. Additionally it can run a ta.Study after download.
 
         Historical Data
         >>> df = df.ta.ticker("aapl")
-        If polygon API installed, include api_key argument
-        >>> df = df.ta.ticker("aapl", ds="polygon", api_key="your API KEY")
         More specifically (for Yahoo Finance)
-        >>> df = df.ta.ticker("aapl", period="max", interval="1d", kind=None)
+        >>> df = df.ta.ticker("aapl", period="max", interval="1d")
 
         Changing the period of Historical Data
         Period is used instead of start/end
@@ -788,53 +772,55 @@ class AnalysisIndicators(object):
         Retrieves the past month in hours
         >>> df = df.ta.ticker("aapl", period="1mo", interval="1h")
 
-        Show everything
-        >>> df = df.ta.ticker("aapl", kind="all")
-
         Args:
             ticker (str): Any string for a ticker you would use with yfinance.
                 Default: "SPY"
-            ds (str): Options: "polygon" and "yahoo". Default: "yahoo"
-        Kwargs:
-            kind (str): Options see above. Default: "history"
-            study (str | ta.Study): Which study to apply after
-                downloading chart history. Default: None
+            period (str): See the yfinance history() method for more options.
+                Default: "max"
 
-            See help(ta.yf) or help(ta.polygon_api) for additional kwargs
+        Kwargs:
+            study (str | ta.Study): Which study to apply after downloading.
+                Default: None
+            timed (bool): Print download time to stdout. Default: False
+
+            For additional yfinance history() keyword arguments:
+                https://github.com/ranaroussi/yfinance/blob/main/yfinance/base.py
 
         Returns:
-            Exits if the DataFrame is empty or None
-            Otherwise it returns a DataFrame
+            DataFrame or None
         """
-        # _frequencies = ["1s", "5s", "15s", "30s", "1m", "5m", "15m", "30m", "45m", "1h", "2h", "4h", "D", "W", "M"]
-        ds = ds.lower() if isinstance(ds, str) else self.ds
+        if not Imports["yfinance"]:
+            print(f"[X] Please install yfinance to use this method. (pip install yfinance)")
+            return
+
+        # Pandas TA keywords to remove from **kwargs
         strategy = kwargs.pop("strategy", None)
         study = kwargs.pop("study", strategy)
-        timed = kwargs.setdefault("timed", False)
+        timed = kwargs.pop("timed", False)
 
-        if isinstance(ticker, str):
-            tickers = [ticker]
+        # yfinance keywords to filter from **kwargs
+        ticker = v_str(ticker, "SPY")
+        period = v_str(period, "max")
+        interval = kwargs.pop("interval", "1d")
+        proxy = kwargs.pop("proxy", {})
 
-        if isinstance(ticker, list):
-            ticker = ticker.pop()
+        df, stime = DataFrame(), None
+        if ticker is not None:
+            import yfinance as yf
 
-        # Fetch Data
-        if ds == "polygon":
+            yfd = yf.Ticker(ticker)
+
             if timed: stime = perf_counter()
-            df = polygon_api(ticker, **kwargs)
-        elif ds in ["yahoo", "yf"]:
-            if timed: stime = perf_counter()
-            df = yf(ticker, **kwargs)
+            df = yfd.history(
+                period=period, interval=interval,
+                proxy=proxy, **kwargs
+            )
         else:
             return None
 
         if timed:
             df.timed = final_time(stime)
-            print(f"[+] {ds} | {ticker}{df.shape}: {df.timed}")
-
-        if df is None or df.empty:
-            print(f"[X] DataFrame is empty: {df.shape}")
-            return None
+            print(f"[+] yf | {ticker}{df.shape}: {df.timed}")
 
         self._df = df
 
@@ -973,6 +959,11 @@ class AnalysisIndicators(object):
         result = eri(high=high, low=low, close=close, length=length, offset=offset, **kwargs)
         return self._post_process(result, **kwargs)
 
+    def exhc(self, length=None, cap=None, asint=None, show_all=None, nozeros=None, offset=None, **kwargs: DictLike):
+        close = self._get_column(kwargs.pop("close", "close"))
+        result = exhc(close=close, length=length, cap=cap, asint=asint, show_all=show_all, nozeros=nozeros, offset=offset, **kwargs)
+        return self._post_process(result, **kwargs)
+
     def fisher(self, length=None, signal=None, offset=None, **kwargs: DictLike):
         high = self._get_column(kwargs.pop("high", "high"))
         low = self._get_column(kwargs.pop("low", "low"))
@@ -1069,6 +1060,18 @@ class AnalysisIndicators(object):
         result = slope(close=close, length=length, offset=offset, **kwargs)
         return self._post_process(result, **kwargs)
 
+    def smc(self, abr_length=None, close_length=None, vol_length=None, percent=None, vol_ratio=None, asint=None, mamode=None, talib=None, offset=None, **kwargs):
+        open_ = self._get_column(kwargs.pop("open", "open"))
+        high = self._get_column(kwargs.pop("high", "high"))
+        low = self._get_column(kwargs.pop("low", "low"))
+        close = self._get_column(kwargs.pop("close", "close"))
+        result = smc(
+            open_=open_, high=high, low=low, close=close,
+            abr_length=abr_length, close_length=close_length, vol_length=vol_length, percent=percent,
+            vol_ratio=vol_ratio, asint=asint, mamode=mamode, talib=talib, offset=offset, **kwargs
+        )
+        return self._post_process(result, **kwargs)
+
     def smi(self, fast=None, slow=None, signal=None, scalar=None, offset=None, **kwargs: DictLike):
         close = self._get_column(kwargs.pop("close", "close"))
         result = smi(close=close, fast=fast, slow=slow, signal=signal, scalar=scalar, offset=offset, **kwargs)
@@ -1113,17 +1116,12 @@ class AnalysisIndicators(object):
         result = stochf(high=high, low=low, close=close, k=k, d=d, mamode=mamode, talib=talib, offset=offset, **kwargs)
         return self._post_process(result, **kwargs)
 
-    def stochrsi(self, length=None, rsi_length=None, k=None, d=None, mamode=None, offset=None, **kwargs: DictLike):
+    def stochrsi(self, length=None, rsi_length=None, k=None, d=None, mamode=None, talib=None, offset=None, **kwargs: DictLike):
         high = self._get_column(kwargs.pop("high", "high"))
         low = self._get_column(kwargs.pop("low", "low"))
         close = self._get_column(kwargs.pop("close", "close"))
         result = stochrsi(high=high, low=low, close=close, length=length, rsi_length=rsi_length, k=k, d=d,
-                          mamode=mamode, offset=offset, **kwargs)
-        return self._post_process(result, **kwargs)
-
-    def td_seq(self, asint=None, offset=None, show_all=None, **kwargs: DictLike):
-        close = self._get_column(kwargs.pop("close", "close"))
-        result = td_seq(close=close, asint=asint, offset=offset, show_all=show_all, **kwargs)
+                          mamode=mamode, talib=talib, offset=offset, **kwargs)
         return self._post_process(result, **kwargs)
 
     def tmo(self, tmo_length=None, calc_length=None, smooth_length=None, mamode=None, compute_momentum=False, normalize_signal=False, offset=None, **kwargs: DictLike):
@@ -1512,6 +1510,11 @@ class AnalysisIndicators(object):
         result = dpo(close=close, length=length, centered=centered, offset=offset, **kwargs)
         return self._post_process(result, **kwargs)
 
+    def ht_trendline(self, talib=None, prenan=None, offset=None, **kwargs: DictLike):
+        close = self._get_column(kwargs.pop("close", "close"))
+        result = ht_trendline(close=close, talib=talib, prenan=prenan, offset=offset, **kwargs)
+        return self._post_process(result, **kwargs)
+
     def increasing(self, length=None, strict=None, asint=None, offset=None, **kwargs: DictLike):
         close = self._get_column(kwargs.pop("close", "close"))
         result = increasing(close=close, length=length, strict=strict, asint=asint, offset=offset, **kwargs)
@@ -1572,13 +1575,6 @@ class AnalysisIndicators(object):
             result = tsignals(trend, asbool=asbool, trend_offset=trend_offset, trend_reset=trend_reset, offset=offset, **kwargs)
             return self._post_process(result, **kwargs)
 
-    def ttm_trend(self, length=None, offset=None, **kwargs: DictLike):
-        high = self._get_column(kwargs.pop("high", "high"))
-        low = self._get_column(kwargs.pop("low", "low"))
-        close = self._get_column(kwargs.pop("close", "close"))
-        result = ttm_trend(high=high, low=low, close=close, length=length, offset=offset, **kwargs)
-        return self._post_process(result, **kwargs)
-
     def vhf(self, length=None, drift=None, offset=None, **kwargs: DictLike):
         close = self._get_column(kwargs.pop("close", "close"))
         result = vhf(close=close, length=length, drift=drift, offset=offset, **kwargs)
@@ -1599,17 +1595,18 @@ class AnalysisIndicators(object):
                               trend_offset=trend_offset, trend_reset=trend_reset, offset=offset, **kwargs)
             return self._post_process(result, **kwargs)
 
-    # def zigzag(self, close=None, pivot_leg=None, price_deviation=None, retrace=None, last_extreme=None, offset=None, **kwargs: DictLike):
-    #     high = self._get_column(kwargs.pop("high", "high"))
-    #     low = self._get_column(kwargs.pop("low", "low"))
-    #     if close is not None:
-    #         close = self._get_column(kwargs.pop("close", "close"))
-    #     result = zigzag(
-    #         high=high, low=low, close=close,
-    #         pivot_leg=pivot_leg, price_deviation=price_deviation,
-    #         retrace=retrace, last_extreme=last_extreme,
-    #         offset=offset, **kwargs)
-    #     return self._post_process(result, **kwargs)
+    def zigzag(self, close=None, legs=None, deviation=None, retrace=None, last_extreme=None, offset=None, **kwargs: DictLike):
+        high = self._get_column(kwargs.pop("high", "high"))
+        low = self._get_column(kwargs.pop("low", "low"))
+        if close is not None:
+            close = self._get_column(kwargs.pop("close", "close"))
+        result = zigzag(
+            high=high, low=low, close=close,
+            legs=legs, deviation=deviation,
+            retrace=retrace, last_extreme=last_extreme,
+            offset=offset, **kwargs
+        )
+        return self._post_process(result, **kwargs)
 
     # Volatility
     def aberration(self, length=None, atr_length=None, offset=None, **kwargs: DictLike):
@@ -1812,10 +1809,10 @@ class AnalysisIndicators(object):
         result = obv(close=close, volume=volume, offset=offset, **kwargs)
         return self._post_process(result, **kwargs)
 
-    def pvi(self, length=None, initial=None, signed=True, offset=None, **kwargs: DictLike):
+    def pvi(self, length=None, initial=None, mamode=None, overlay=None, offset=None, **kwargs: DictLike):
         close = self._get_column(kwargs.pop("close", "close"))
         volume = self._get_column(kwargs.pop("volume", "volume"))
-        result = pvi(close=close, volume=volume, length=length, initial=initial, signed=signed, offset=offset, **kwargs)
+        result = pvi(close=close, volume=volume, length=length, initial=initial, mamode=mamode, overlay=overlay, offset=offset, **kwargs)
         return self._post_process(result, **kwargs)
 
     def pvo(self, fast=None, slow=None, signal=None, scalar=None, offset=None, **kwargs: DictLike):

@@ -4,6 +4,7 @@ from pandas_ta._typing import DictLike, Int
 from pandas_ta.utils import v_offset, v_series
 
 
+
 def hl2(
     high: Series, low: Series,
     offset: Int = None, **kwargs: DictLike
@@ -20,8 +21,6 @@ def hl2(
     Kwargs:
         fillna (value, optional): pd.DataFrame.fillna(value). Only works if
             result is offset.
-        fill_method (value, optional): Type of fill method. Only works if
-            result is offset.
 
     Returns:
         pd.Series: New feature generated.
@@ -35,7 +34,7 @@ def hl2(
         return
 
     # Calculate
-    avg = 0.5 * (high.values + low.values)
+    avg = 0.5 * (high.to_numpy() + low.to_numpy())
     hl2 = Series(avg, index=high.index)
 
     # Offset
@@ -45,8 +44,6 @@ def hl2(
         # Fill
         if "fillna" in kwargs:
             hl2.fillna(kwargs["fillna"], inplace=True)
-        if "fill_method" in kwargs:
-            hl2.fillna(method=kwargs["fill_method"], inplace=True)
 
     # Name and Category
     hl2.name = "HL2"
