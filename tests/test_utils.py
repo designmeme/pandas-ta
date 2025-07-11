@@ -81,7 +81,7 @@ def test_below_value():
 
 
 def test_combination():
-    assert ta.utils.combination() != None
+    assert ta.utils.combination() is not None
 
     assert ta.utils.combination() == 1
     assert ta.utils.combination(r=-1) == 1
