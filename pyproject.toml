@@ -4,15 +4,6 @@ version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
-
-[build-system]
-requires = ["setuptools>=45", "wheel"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools.packages.find]
-include = ["pandas_ta*"]
-exclude = ["data*", "images*"]
-
 dependencies = [
     "numba>=0.59.0",
     "numpy>=1.26.4",
@@ -47,3 +38,11 @@ dev = [
 [tool.ruff.lint]
 ignore = ["E402", "F403", "F841", "F405"]
 #select = ["NPY201"]
+
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["pandas_ta*"]
+exclude = ["data*", "images*"]
