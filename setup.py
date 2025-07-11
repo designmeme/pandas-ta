@@ -66,8 +66,11 @@ setup(
     # $ pip install -U pandas_ta[full]  # pip
     extras_require={
         "full": [
-            "alphaVantage-api", "matplotlib", "mplfinance",
-            "python-dotenv", "sklearn", "statsmodels", "stochastic",
+            "alphaVantage-api",
+            "matplotlib", "mplfinance",
+            "python-dotenv",
+            "sklearn",
+            "statsmodels", "stochastic",
             "TA-Lib>=0.4.28", "tqdm", "vectorbt", "yfinance>=0.2.36"
         ],
         "test": [

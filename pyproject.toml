@@ -13,6 +13,21 @@ dependencies = [
     "scipy>=1.12",
 ]
 
+[project.optional-dependencies]
+full = [
+    "alphavantage-api",
+    "matplotlib>=3.10.3",
+    "mplfinance>=0.12.10b0",
+    # todo change to scikit-learn
+    "sklearn",
+    "statsmodels>=0.14.5",
+    "stochastic>=0.4.0",
+    "ta-lib>=0.6.4",
+    "tqdm>=4.67.1",
+    "vectorbt>=0.28.0",
+    "yfinance>=0.2.65",
+]
+
 [dependency-groups]
 dev = [
     "pytest>=8.4.1",
