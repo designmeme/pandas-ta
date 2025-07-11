@@ -12,7 +12,7 @@ def jma(
     close: Series, length: IntFloat = None, phase: IntFloat = None,
     offset: Int = None, **kwargs: DictLike
 ) -> Series:
-    """Jurik Moving Average Average (JMA)
+    """Jurik Moving Average (JMA)
 
     Mark Jurik's Moving Average (JMA) attempts to eliminate noise to see
     the "true" underlying activity. It has extremely low lag, is very
