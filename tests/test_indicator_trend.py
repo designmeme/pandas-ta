@@ -10,7 +10,7 @@ from .config import CORRELATION, CORRELATION_THRESHOLD, error_analysis
 
 
 sample_adx_data = read_csv(
-    f"data/ADX_D.csv",
+    "data/ADX_D.csv",
     index_col=0,
     parse_dates=True,
     # date_format="%f"

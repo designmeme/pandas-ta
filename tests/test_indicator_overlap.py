@@ -670,11 +670,6 @@ def test_ext_pivots(df):
     assert len(df.columns[-9:]) == 9
 
 
-def test_ext_hl2(df):
-    df.ta.hl2(append=True)
-    assert df.columns[-1] == "HL2"
-
-
 def test_ext_pwma(df):
     df.ta.pwma(append=True)
     assert df.columns[-1] == "PWMA_10"

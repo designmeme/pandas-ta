@@ -18,5 +18,5 @@ dev = [
     "ruff>=0.12.2",
 ]
 
-#[tool.ruff.lint]
-#select = ["NPY201"]
+[tool.ruff.lint]
+select = ["NPY201"]

@@ -3,8 +3,7 @@ import pandas.testing as pdt
 import talib as tal
 import pandas_ta as ta
 
-from pandas import DataFrame, Series, concat
-from pytest import mark
+from pandas import DataFrame, Series
 
 from .config import CORRELATION, CORRELATION_THRESHOLD, error_analysis
 
@@ -660,11 +659,6 @@ def test_ext_crsi(df):
 def test_ext_cti(df):
     df.ta.cti(append=True)
     assert df.columns[-1] == "CTI_12"
-
-
-def test_ext_crsi(df):
-    df.ta.crsi(append=True)
-    assert df.columns[-1] == "CRSI_3_2_100"
 
 
 def test_ext_er(df):
