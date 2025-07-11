@@ -55,7 +55,7 @@ setup(
     },
     install_requires=[
         "numba>=0.59.0",
-        "numpy==1.26.4",
+        "numpy>=1.26.4",
         "pandas>=2.2.0",
         "pandas-datareader",
         "scipy>=1.12"
@@ -72,7 +72,7 @@ setup(
         ],
         "test": [
             "numba>=0.59.0",
-            "numpy==1.26.4",
+            "numpy>=1.26.4",
             "pandas>=2.2.0",
             "pandas_datareader>=0.10.0",
             "pytest==7.1.2",
