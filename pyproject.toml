@@ -15,7 +15,10 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "pytest>=8.4.1",
     "ruff>=0.12.2",
+    "ta-lib>=0.6.4",
+    "yfinance>=0.2.65",
 ]
 
 [tool.ruff.lint]
