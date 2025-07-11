@@ -19,4 +19,5 @@ dev = [
 ]
 
 [tool.ruff.lint]
-select = ["NPY201"]
+ignore = ["E402", "F403", "F841", "F405"]
+#select = ["NPY201"]

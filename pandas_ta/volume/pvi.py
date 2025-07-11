@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from numba import njit
-from numpy import empty, float64, zeros_like
+from numpy import float64, zeros_like
 from pandas import DataFrame, Series
 from pandas_ta._typing import DictLike, Int
 from pandas_ta.ma import ma
@@ -98,7 +98,7 @@ def pvi(
     # Name and Category
     _mode = mamode.lower()[0] if len(mamode) else ""
     _props = f"{_mode}_{length}"
-    pvi.name = f"PVI"
+    pvi.name = "PVI"
     pvi_ma.name = f"PVI{_props}"
     pvi.category = pvi_ma.category = "volume"
 

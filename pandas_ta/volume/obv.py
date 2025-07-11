@@ -61,7 +61,7 @@ def obv(
         obv.fillna(kwargs["fillna"], inplace=True)
 
     # Name and Category
-    obv.name = f"OBV"
+    obv.name = "OBV"
     obv.category = "volume"
 
     return obv

@@ -144,7 +144,7 @@ def linreg(
         linreg.fillna(kwargs["fillna"], inplace=True)
 
     # Name and Category
-    linreg.name = f"LINREG"
+    linreg.name = "LINREG"
     if slope:
         linreg.name += "m"
     if intercept:

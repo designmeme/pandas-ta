@@ -2,7 +2,7 @@
 from numpy import convolve, ones
 from numba import njit
 from pandas import Series
-from pandas_ta._typing import Array, DictLike, Int
+from pandas_ta._typing import DictLike, Int
 from pandas_ta.maps import Imports
 from pandas_ta.utils import (
     nb_prepend,

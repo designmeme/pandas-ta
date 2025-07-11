@@ -54,7 +54,7 @@ def pvt(
         pvt.fillna(kwargs["fillna"], inplace=True)
 
     # Name and Category
-    pvt.name = f"PVT"
+    pvt.name = "PVT"
     pvt.category = "volume"
 
     return pvt

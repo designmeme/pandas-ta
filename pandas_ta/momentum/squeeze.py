@@ -159,9 +159,9 @@ def squeeze(
 
     data = {
         squeeze.name: squeeze,
-        f"SQZ_ON": squeeze_on,
-        f"SQZ_OFF": squeeze_off,
-        f"SQZ_NO": no_squeeze
+        "SQZ_ON": squeeze_on,
+        "SQZ_OFF": squeeze_off,
+        "SQZ_NO": no_squeeze
     }
     df = DataFrame(data, index=close.index)
     df.name = squeeze.name
@@ -199,11 +199,11 @@ def squeeze(
             neg_dec.fillna(kwargs["fillna"], inplace=True)
             neg_inc.fillna(kwargs["fillna"], inplace=True)
 
-        df[f"SQZ_INC"] = sqz_inc
-        df[f"SQZ_DEC"] = sqz_dec
-        df[f"SQZ_PINC"] = pos_inc
-        df[f"SQZ_PDEC"] = pos_dec
-        df[f"SQZ_NDEC"] = neg_dec
-        df[f"SQZ_NINC"] = neg_inc
+        df["SQZ_INC"] = sqz_inc
+        df["SQZ_DEC"] = sqz_dec
+        df["SQZ_PINC"] = pos_inc
+        df["SQZ_PDEC"] = pos_dec
+        df["SQZ_NDEC"] = neg_dec
+        df["SQZ_NINC"] = neg_inc
 
     return df

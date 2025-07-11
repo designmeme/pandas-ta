@@ -179,11 +179,11 @@ def squeeze_pro(
 
     data = {
         squeeze.name: squeeze,
-        f"SQZPRO_ON_WIDE": squeeze_on_wide,
-        f"SQZPRO_ON_NORMAL": squeeze_on_normal,
-        f"SQZPRO_ON_NARROW": squeeze_on_narrow,
-        f"SQZPRO_OFF": squeeze_off_wide,
-        f"SQZPRO_NO": no_squeeze
+        "SQZPRO_ON_WIDE": squeeze_on_wide,
+        "SQZPRO_ON_NORMAL": squeeze_on_normal,
+        "SQZPRO_ON_NARROW": squeeze_on_narrow,
+        "SQZPRO_OFF": squeeze_off_wide,
+        "SQZPRO_NO": no_squeeze
     }
     df = DataFrame(data, index=close.index)
     df.name = squeeze.name
@@ -221,11 +221,11 @@ def squeeze_pro(
             neg_dec.fillna(kwargs["fillna"], inplace=True)
             neg_inc.fillna(kwargs["fillna"], inplace=True)
 
-        df[f"SQZPRO_INC"] = sqz_inc
-        df[f"SQZPRO_DEC"] = sqz_dec
-        df[f"SQZPRO_PINC"] = pos_inc
-        df[f"SQZPRO_PDEC"] = pos_dec
-        df[f"SQZPRO_NDEC"] = neg_dec
-        df[f"SQZPRO_NINC"] = neg_inc
+        df["SQZPRO_INC"] = sqz_inc
+        df["SQZPRO_DEC"] = sqz_dec
+        df["SQZPRO_PINC"] = pos_inc
+        df["SQZPRO_PDEC"] = pos_dec
+        df["SQZPRO_NDEC"] = neg_dec
+        df["SQZPRO_NINC"] = neg_inc
 
     return df

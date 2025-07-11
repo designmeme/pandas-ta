@@ -10,10 +10,10 @@ import pandas_ta as ta
 from pandas import read_csv
 
 TEST_ROWS = 200
-TEST_CSV = f"data/SPY_D.csv"
+TEST_CSV = "data/SPY_D.csv"
 
 BEEP = False
-PLAY_BEEP = f"osascript -e beep"
+PLAY_BEEP = "osascript -e beep"
 
 @pytest.fixture(name="df", scope="function")
 def testdf():
@@ -23,7 +23,8 @@ def testdf():
     yield df.iloc[:TEST_ROWS]
 
     del df
-    if BEEP: os_system(PLAY_BEEP)
+    if BEEP:
+        os_system(PLAY_BEEP)
 
 
 @pytest.fixture(scope="function")

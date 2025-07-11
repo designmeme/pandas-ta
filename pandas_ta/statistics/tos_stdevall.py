@@ -42,7 +42,7 @@ def tos_stdevall(
             multiples of the standard deviation. Default: returns 7 columns.
     """
     # Validate
-    _props = f"TOS_STDEVALL"
+    _props = "TOS_STDEVALL"
     if length is None:
         length = close.size
     else:

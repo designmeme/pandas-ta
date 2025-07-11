@@ -67,7 +67,7 @@ def bop(
         bop.fillna(kwargs["fillna"], inplace=True)
 
     # Name and Category
-    bop.name = f"BOP"
+    bop.name = "BOP"
     bop.category = "momentum"
 
     return bop

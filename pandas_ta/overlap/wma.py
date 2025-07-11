@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from numpy import arange, dot, float64, nan, zeros_like
+from numpy import arange, float64, nan, zeros_like
 from numba import njit
 from pandas import Series
 from pandas_ta._typing import DictLike, Int

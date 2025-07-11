@@ -46,7 +46,7 @@ def pvol(
         pvol.fillna(kwargs["fillna"], inplace=True)
 
     # Name and Category
-    pvol.name = f"PVOL"
+    pvol.name = "PVOL"
     pvol.category = "volume"
 
     return pvol

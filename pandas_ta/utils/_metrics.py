@@ -52,7 +52,7 @@ def calmar_ratio(
     >>> result = ta.calmar_ratio(close, method="percent", years=3)
     """
     if years <= 0:
-        print(f"[!] calmar_ratio 'years' argument must be greater than zero.")
+        print("[!] calmar_ratio 'years' argument must be greater than zero.")
         return
     close = v_series(close)
 
@@ -170,7 +170,7 @@ def optimal_leverage(
     from pandas_ta.performance import log_return, percent_return
     close = v_series(close)
 
-    use_cagr = kwargs.pop("use_cagr", False)
+    # use_cagr = kwargs.pop("use_cagr", False)
     if log:
         returns = log_return(close=close)
     else:

@@ -84,7 +84,8 @@ def stoch(
 
         stoch = 100 * (close - ll) / non_zero_range(hh, ll)
 
-        if stoch is None: return
+        if stoch is None:
+            return
 
         stoch_fvi = stoch.loc[stoch.first_valid_index():, ]
         if smooth_k == 1:

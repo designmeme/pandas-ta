@@ -2,7 +2,6 @@
 from pandas import DataFrame, Series
 from pandas_ta._typing import DictLike, Int
 from pandas_ta.ma import ma
-from pandas_ta.maps import Imports
 from pandas_ta.momentum import rsi
 from pandas_ta.utils import (
     non_zero_range,

@@ -3,20 +3,20 @@ import datetime
 from pathlib import Path
 
 from numpy import array
-from pandas import DataFrame, DatetimeIndex, read_csv
+from pandas import DataFrame, read_csv
 import pandas_datareader as pdr
 
 import pandas_ta
 from pandas_ta._typing import DictLike, IntFloat
 
 sample_adx_data = read_csv(
-    f"data/ADX_D.csv", index_col=0,
+    "data/ADX_D.csv", index_col=0,
     parse_dates=True, date_format="%f"
 )
 
-ALERT: str = f"[!]"
-INFO: str = f"[i]"
-TEST: str = f"[T]"
+ALERT: str = "[!]"
+INFO: str = "[i]"
+TEST: str = "[T]"
 
 CORRELATION: str = "corr"  # "sem"
 CORRELATION_THRESHOLD: IntFloat = 0.99  # Less than 0.99 is undesirable
@@ -63,7 +63,8 @@ def load(**kwargs: DictLike):
         _mode = "Loading"
     except BaseException as err:
         print(f"{ALERT} {err}")
-        if kwargs["verbose"]: print(f"{INFO} Downloading: {kwargs['ticker']} from YF")
+        if kwargs["verbose"]:
+            print(f"{INFO} Downloading: {kwargs['ticker']} from YF")
         df = pdr.get_data_yahoo(kwargs['ticker'], interval=kwargs['interval'])
         df.to_csv(Path(fpath), mode="a")
         _mode = "Downloading"

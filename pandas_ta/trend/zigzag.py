@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from numpy import floor, isnan, nan, zeros, zeros_like
+from numpy import floor, nan, zeros, zeros_like
 from numba import njit
 from pandas import Series, DataFrame
 from pandas_ta._typing import DictLike, Int, IntFloat

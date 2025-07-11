@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from pandas import Series
-from pandas_ta._typing import DictLike, Int, IntFloat
+from pandas_ta._typing import DictLike, Int
 from pandas_ta.ma import ma
 from pandas_ta.utils import v_mamode, v_offset, v_pos_default, v_series
 
@@ -50,12 +50,12 @@ def ni(
     offset = v_offset(offset)
 
     # Calculate Result
-    ma = ma(mamode, close, length=length, **kwargs)
+    ma_line = ma(mamode, close, length=length, **kwargs)
 
     t = int(0.5 * length) + 1
-    ni = close - ma.shift(t)
+    ni = close - ma_line.shift(t)
     if centered:
-        ni = (close.shift(t) - ma).shift(-t)
+        ni = (close.shift(t) - ma_line).shift(-t)
 
     # Offset
     if offset != 0:

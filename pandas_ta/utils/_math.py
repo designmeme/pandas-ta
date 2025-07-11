@@ -5,8 +5,7 @@ from operator import mul
 from sys import float_info as sflt
 
 from numpy import (
-    all, append, array, corrcoef, dot, exp, fabs, float64,
-    log, nan, ndarray, ones, seterr, sign, sqrt, sum, triu,
+    all, array, corrcoef, dot, exp, fabs, log, nan, ndarray, ones, seterr, sign, sqrt, sum, triu,
     zeros
 )
 from pandas import DataFrame, Series

@@ -15,7 +15,7 @@ from pandas_ta._typing import *
 from pandas_ta import *
 
 if Imports["dotenv"]:
-    from dotenv import load_dotenv
+    pass
 
 
 # Pandas TA - DataFrame Extension Analysis Indicators
@@ -255,7 +255,8 @@ class AnalysisIndicators(object):
         """Appends a Pandas Series or DataFrame columns to self._df."""
         if "append" in kwargs and kwargs["append"]:
             df = self._df
-            if df is None or result is None: return
+            if df is None or result is None:
+                return
             else:
                 simplefilter(action="ignore", category=PerformanceWarning)
                 pd_options.mode.chained_assignment = None
@@ -292,7 +293,8 @@ class AnalysisIndicators(object):
     def _get_column(self, series: Union[Series, str, None]):
         """Attempts to get the correct series or 'column' and return it."""
         df = self._df
-        if df is None: return
+        if df is None:
+            return
 
         # Explicitly passing a pd.Series to override default.
         if isinstance(series, Series):
@@ -314,8 +316,10 @@ class AnalysisIndicators(object):
                 NOT_FOUND = f"[X] The '{series}' column was not found in"
                 cols = ", ".join(list(df.columns))
 
-                if len(df.columns): NOT_FOUND += f": {cols}"
-                else:               NOT_FOUND += " the DataFrame"
+                if len(df.columns):
+                    NOT_FOUND += f": {cols}"
+                else:
+                    NOT_FOUND += " the DataFrame"
 
                 if len(match):
                     return df.iloc[:, match[0]]
@@ -345,7 +349,7 @@ class AnalysisIndicators(object):
         verbose = kwargs.pop("verbose", False)
         if not isinstance(result, (Series, DataFrame)):
             if verbose:
-                print(f"[X] The result is not a Series or DataFrame.")
+                print("[X] The result is not a Series or DataFrame.")
             return self._df
         else:
             # Append only specific columns to the dataframe (via
@@ -592,7 +596,7 @@ class AnalysisIndicators(object):
         self.cores = cores
 
         if _dep_warning:
-            print(f"\n[!] DEPRECIATION WARNING:\n    Use study() instead of strategy().\n")
+            print("\n[!] DEPRECIATION WARNING:\n    Use study() instead of strategy().\n")
 
         # Initialize
         initial_column_count = self._df.shape[1]
@@ -621,7 +625,7 @@ class AnalysisIndicators(object):
         elif mode["all"]:
             ta = self.indicators(as_list=True, exclude=excluded)
         else:
-            print(f"[X] Study not available.")
+            print("[X] Study not available.")
             return None
 
         verbose = kwargs.pop("verbose", False)
@@ -705,14 +709,14 @@ class AnalysisIndicators(object):
         else:
             # Without multiprocessing:
             if verbose:
-                _col_msg = f"[i] No multiprocessing (cores = 0)."
+                _col_msg = "[i] No multiprocessing (cores = 0)."
                 if has_col_names:
-                    _col_msg = f"[i] No multiprocessing support for 'col_names' option."
+                    _col_msg = "[i] No multiprocessing support for 'col_names' option."
                 print(_col_msg)
 
             if mode["custom"]:
                 if Imports["tqdm"] and verbose:
-                    pbar = tqdm(ta, f"[i] Progress")
+                    pbar = tqdm(ta, "[i] Progress")
                     for ind in pbar:
                         params = ind["params"] if "params" in ind and isinstance(ind["params"], tuple) else tuple()
                         getattr(self, ind["kind"])(*params, **{**ind, **kwargs})
@@ -722,7 +726,7 @@ class AnalysisIndicators(object):
                         getattr(self, ind["kind"])(*params, **{**ind, **kwargs})
             else:
                 if Imports["tqdm"] and verbose:
-                    pbar = tqdm(ta, f"[i] Progress")
+                    pbar = tqdm(ta, "[i] Progress")
                     for ind in pbar:
                         getattr(self, ind)(*tuple(), **kwargs)
                 else:
@@ -790,7 +794,7 @@ class AnalysisIndicators(object):
             DataFrame or None
         """
         if not Imports["yfinance"]:
-            print(f"[X] Please install yfinance to use this method. (pip install yfinance)")
+            print("[X] Please install yfinance to use this method. (pip install yfinance)")
             return
 
         # Pandas TA keywords to remove from **kwargs
@@ -810,7 +814,8 @@ class AnalysisIndicators(object):
 
             yfd = yf.Ticker(ticker)
 
-            if timed: stime = perf_counter()
+            if timed:
+                stime = perf_counter()
             df = yfd.history(
                 period=period, interval=interval,
                 proxy=proxy, **kwargs
@@ -1286,11 +1291,6 @@ class AnalysisIndicators(object):
         result = rma(close=close, length=length, offset=offset, **kwargs)
         return self._post_process(result, **kwargs)
 
-    def rwi(self, length=None, offset=None, **kwargs):
-        close = self._get_column(kwargs.pop("close", "close"))
-        result = rwi(high=high, low=low, close=close, length=length, offset=offset, **kwargs)
-        return self._post_process(result, **kwargs)
-
     def sinwma(self, length=None, offset=None, **kwargs: DictLike):
         close = self._get_column(kwargs.pop("close", "close"))
         result = sinwma(close=close, length=length, offset=offset, **kwargs)
@@ -1314,14 +1314,6 @@ class AnalysisIndicators(object):
     def ssf3(self, length=None, pi=None, sqrt3=None, offset=None, **kwargs: DictLike):
         close = self._get_column(kwargs.pop("close", "close"))
         result = ssf3(close=close, length=length, pi=pi, sqrt3=sqrt3, offset=offset, **kwargs)
-        return self._post_process(result, **kwargs)
-
-    def supertrend(self, length=None, multiplier=None, offset=None, **kwargs: DictLike):
-        high = self._get_column(kwargs.pop("high", "high"))
-        low = self._get_column(kwargs.pop("low", "low"))
-        close = self._get_column(kwargs.pop("close", "close"))
-        result = supertrend(high=high, low=low, close=close, length=length, multiplier=multiplier, offset=offset,
-                            **kwargs)
         return self._post_process(result, **kwargs)
 
     def swma(self, length=None, offset=None, **kwargs: DictLike):

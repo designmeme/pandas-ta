@@ -9,7 +9,7 @@ from numpy import argmax, argmin, finfo, float64
 from numba import njit
 from pandas import DataFrame, Series
 
-from pandas_ta._typing import Array, Int, IntFloat, ListStr, Union
+from pandas_ta._typing import Int, IntFloat, ListStr, Union
 from pandas_ta.utils._validate import v_bool, v_pos_default, v_series
 from pandas_ta.maps import Imports
 
@@ -222,7 +222,7 @@ def speed_test(df: DataFrame,
 
     """
     if df.empty:
-        print(f"[X] No DataFrame")
+        print("[X] No DataFrame")
         return
     talib = v_bool(talib, False)
     top = int(top) if isinstance(top, int) and top > 0 else None
@@ -238,7 +238,8 @@ def speed_test(df: DataFrame,
     else:
         _indicators = df.ta.indicators(as_list=True, exclude=_ichimoku)
 
-    if len(_indicators) == 0: return None
+    if len(_indicators) == 0:
+        return None
 
     _iname = "Indicator"
     if verbose:

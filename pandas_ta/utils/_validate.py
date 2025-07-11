@@ -116,8 +116,10 @@ def v_lowerbound(
 ) -> IntFloat:
     """Returns the default if var(iable) not greater(equal) than bound."""
     var_type = None
-    if isinstance(var, (float, np_floating)): var_type = float
-    if isinstance(var, (int, np_integer)): var_type = int
+    if isinstance(var, (float, np_floating)):
+        var_type = float
+    if isinstance(var, (int, np_integer)):
+        var_type = int
 
     if var_type is None:
         return default
@@ -128,7 +130,8 @@ def v_lowerbound(
     else:
         valid = var_type(var) >= var_type(bound)
 
-    if complement: valid = not valid
+    if complement:
+        valid = not valid
 
     if valid:
         return var_type(var)

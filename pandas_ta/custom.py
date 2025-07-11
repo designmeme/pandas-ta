@@ -185,12 +185,12 @@ def import_dir(path: str, verbose: bool = True):
                 _callable = module_functions.get(module_name, None)
                 _method_callable = module_functions.get(f"{module_name}_method", None)
 
-                if _callable == None:
+                if _callable is None:
                     print(
                         f"[X] Unable to find a function named '{module_name}' in the module '{module_name}.py'."
                     )
                     continue
-                if _method_callable == None:
+                if _method_callable is None:
                     missing_method = f"{module_name}_method"
                     print(
                         f"[X] Unable to find a method function named '{missing_method}' in the module '{module_name}.py'."
